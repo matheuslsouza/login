@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {
   SafeAreaView,
   View,
@@ -9,20 +9,67 @@ import {
 } from 'react-native';
 
 const App = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [status, setStatus] = useState('');
+  const [showCupom, setShowCupom] = useState(false);
+
+  const handleVerifyLogin = async () => {
+    setStatus('');
+    setShowCupom(false);
+
+    try {
+      const response = await fetch('http://api.b7web.com.br/loginsimples/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          email: email,
+          password: password,
+        }),
+      });
+
+      const json = await response.json();
+
+      if (json.status === 'ok') {
+        setStatus('Login verificado com sucesso.');
+        setShowCupom(true);
+      } else {
+        setStatus('Falha na verificação do login.');
+        setShowCupom(false);
+      }
+    } catch (error) {
+      setStatus('Ocorreu um erro ao verificar o login.');
+      setShowCupom(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.header}>Desconto</Text>
 
-      <TextInput style={styles.input} placeholder="Digite seu email" />
-      <TextInput style={styles.input} placeholder="Digite sua senha" />
+      <TextInput
+        style={styles.input}
+        placeholder="Digite seu email"
+        value={email}
+        onChangeText={setEmail}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Digite sua senha"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry={true}
+      />
 
-      <Button title="Verificar" />
+      <Button title="Verificar" onPress={handleVerifyLogin} />
 
-      <Text style={styles.status}>...</Text>
-      <View style={styles.cupomArea}>
-        <Text style={styles.cupomTitle}>Codigo de cupom: </Text>
-        <Text style={styles.cupomCode}>KUEBD56782</Text>
-      </View>
+      <Text style={styles.status}>{status}</Text>
+      {showCupom && (
+        <View style={styles.cupomArea}>
+          <Text style={styles.cupomTitle}>Codigo de cupom: </Text>
+          <Text style={styles.cupomCode}>KUEBD56782</Text>
+        </View>
+      )}
     </SafeAreaView>
   );
 };
